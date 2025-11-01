@@ -1,0 +1,694 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title> Next-Gen AI Resume Generator</title>
+    <meta name="description" content="Revolutionary AI-powered resume
+     and cover letter generator for 2025. Create professional documents that get you hired faster.">
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Space+Grotesk:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Framer Motion -->
+    <script src="https://unpkg.com/framer-motion@10.16.4/dist/framer-motion.js"></script>
+    
+    <!-- React and React DOM -->
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    
+    <!-- Babel for JSX transformation -->
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    
+    <!-- Three.js for background effects -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            overflow-x: hidden;
+        }
+        
+        .font-display {
+            font-family: 'Space Grotesk', sans-serif;
+        }
+        
+        /* Custom scrollbar */
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+        
+        ::-webkit-scrollbar-track {
+            background: #0a0a0a;
+        }
+        
+        ::-webkit-scrollbar-thumb {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 3px;
+        }
+        
+        /* Gradient animations */
+        .gradient-text {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        .gradient-bg {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        
+        .glass-effect {
+            backdrop-filter: blur(20px);
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        /* Neumorphic design elements */
+        .neumorphic {
+            background: #1a1a1a;
+            box-shadow: 
+                inset 2px 2px 5px rgba(0, 0, 0, 0.5),
+                inset -2px -2px 5px rgba(255, 255, 255, 0.1);
+        }
+        
+        /* Aurora background effect */
+        .aurora-bg {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            z-index: -1;
+        }
+        
+        .aurora {
+            position: absolute;
+            filter: blur(100px);
+            opacity: 0.3;
+            border-radius: 50%;
+        }
+        
+        /* Loading states */
+        .loading-dots {
+            display: inline-block;
+        }
+        
+        .loading-dots::after {
+            content: '';
+            animation: loading 1.5s infinite;
+        }
+        
+        @keyframes loading {
+            0% { content: '.'; }
+            33% { content: '..'; }
+            66% { content: '...'; }
+            100% { content: '.'; }
+        }
+        
+        /* Floating animation */
+        @keyframes float {
+            0%, 100% { transform: translateY(0px) rotate(0deg); }
+            33% { transform: translateY(-10px) rotate(2deg); }
+            66% { transform: translateY(-5px) rotate(-2deg); }
+        }
+        
+        .float-animation {
+            animation: float 6s ease-in-out infinite;
+        }
+        
+        /* Pulse animation for CTAs */
+        @keyframes pulse-glow {
+            0%, 100% { box-shadow: 0 0 20px rgba(102, 126, 234, 0.5); }
+            50% { box-shadow: 0 0 40px rgba(102, 126, 234, 0.8); }
+        }
+        
+        .pulse-glow {
+            animation: pulse-glow 2s ease-in-out infinite;
+        }
+    </style>
+</head>
+<body class="bg-black text-white">
+    <!-- React App Root -->
+    <div id="root"></div>
+
+    <!-- Main React Component -->
+    <script type="text/babel">
+        const { useState, useEffect, useRef } = React;
+        
+        // Framer Motion-like animation utilities
+        const motion = {
+            initial: (props) => ({ 
+                ...props, 
+                opacity: 0, 
+                y: 50,
+                scale: 0.9
+            }),
+            animate: (props) => ({ 
+                ...props, 
+                opacity: 1, 
+                y: 0,
+                scale: 1,
+                transition: { 
+                    duration: 0.8, 
+                    ease: "easeOut" 
+                }
+            }),
+            whileInView: (props) => ({
+                ...props,
+                opacity: 1,
+                y: 0,
+                scale: 1,
+                transition: {
+                    duration: 0.6,
+                    ease: "easeOut"
+                }
+            })
+        };
+
+        // Header Component
+        const Header = () => {
+            const [isMenuOpen, setIsMenuOpen] = useState(false);
+            const [isScrolled, setIsScrolled] = useState(false);
+
+            useEffect(() => {
+                const handleScroll = () => {
+                    setIsScrolled(window.scrollY > 20);
+                };
+                window.addEventListener('scroll', handleScroll);
+                return () => window.removeEventListener('scroll', handleScroll);
+            }, []);
+
+            return (
+                <header className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
+                    isScrolled ? 'glass-effect' : 'bg-transparent'
+                }`}>
+                    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                        <div className="flex justify-between items-center h-20">
+                            <div className="flex items-center space-x-3">
+                                <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-purple-600 rounded-2xl flex items-center justify-center">
+                                    <i className="fas fa-brain text-white text-xl"></i>
+                                </div>
+                                <div>
+                                    <h1 className="text-2xl font-display font-bold bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent">
+                                        AIResume Pro
+                                    </h1>
+                                    <p className="text-xs text-gray-400">2025 Edition</p>
+                                </div>
+                            </div>
+                            
+                            <nav className="hidden md:flex items-center space-x-8">
+                                <a href="#features" className="text-gray-300 hover:text-white transition-colors duration-300">Features</a>
+                                <a href="#pricing" className="text-gray-300 hover:text-white transition-colors duration-300">Pricing</a>
+                                <a href="#testimonials" className="text-gray-300 hover:text-white transition-colors duration-300">Reviews</a>
+                                <button className="bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 px-6 py-2 rounded-xl font-semibold transition-all duration-300 transform hover:scale-105">
+                                    Start Free
+                                </button>
+                            </nav>
+                            
+                            <button 
+                                className="md:hidden text-white"
+                                onClick={() => setIsMenuOpen(!isMenuOpen)}
+                            >
+                                <i className={`fas ${isMenuOpen ? 'fa-times' : 'fa-bars'} text-xl`}></i>
+                            </button>
+                        </div>
+                        
+                        {isMenuOpen && (
+                            <div className="md:hidden glass-effect rounded-2xl p-6 mt-4">
+                                <nav className="flex flex-col space-y-4">
+                                    <a href="#features" className="text-gray-300 hover:text-white transition-colors">Features</a>
+                                    <a href="#pricing" className="text-gray-300 hover:text-white transition-colors">Pricing</a>
+                                    <a href="#testimonials" className="text-gray-300 hover:text-white transition-colors">Reviews</a>
+                                    <button className="bg-gradient-to-r from-blue-500 to-purple-600 px-6 py-2 rounded-xl font-semibold">
+                                        Start Free
+                                    </button>
+                                </nav>
+                            </div>
+                        )}
+                    </div>
+                </header>
+            );
+        };
+
+        // Hero Component with advanced animations
+        const Hero = () => {
+            const [currentWord, setCurrentWord] = useState(0);
+            const words = ['Resumes', 'Cover Letters', 'Career Documents'];
+            
+            useEffect(() => {
+                const interval = setInterval(() => {
+                    setCurrentWord((prev) => (prev + 1) % words.length);
+                }, 3000);
+                return () => clearInterval(interval);
+            }, []);
+
+            return (
+                <section className="relative min-h-screen flex items-center justify-center overflow-hidden">
+                    {/* Aurora background effect */}
+                    <div className="aurora-bg">
+                        <div className="aurora w-96 h-96 bg-blue-500 top-0 left-0"></div>
+                        <div className="aurora w-80 h-80 bg-purple-500 top-1/2 right-0"></div>
+                        <div className="aurora w-72 h-72 bg-pink-500 bottom-0 left-1/2"></div>
+                    </div>
+                    
+                    <div className="max-w-7xl mx-auto mt-12 px-4 sm:px-6 lg:px-8 relative z-10">
+                        <div className="grid lg:grid-cols-2 gap-12 items-center">
+                            <div className="space-y-8">
+                                <div className="space-y-6">
+                                    <div className="inline-flex items-center bg-white/10 backdrop-blur-md px-6 py-3 rounded-full border border-white/20">
+                                        <i className="fas fa-sparkles text-yellow-400 mr-3"></i>
+                                      
+                                    </div>
+                                    
+                                    <h1 className="text-5xl lg:text-7xl font-display font-bold leading-tight mt-12">
+                                        Create
+                                        <span className="block bg-gradient-to-r from-blue-400 via-purple-400 to-pink-400 bg-clip-text text-transparent animate-pulse ">
+                                            {words[currentWord]}
+                                        </span>
+                                        <span className="text-white">That Get You Hired</span>
+                                    </h1>
+                                    
+                                    <p className="text-xl text-gray-300 leading-relaxed max-w-2xl">
+                                        Revolutionary AI technology crafts personalized resumes and cover letters that pass ATS systems and impress hiring managers. Land interviews 3x faster.
+                                    </p>
+                                </div>
+                                
+                                <div className="flex flex-col sm:flex-row gap-4">
+                                    <button className="pulse-glow bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 px-8 py-4 rounded-2xl font-bold text-lg transition-all duration-300 transform hover:scale-105">
+                                        <i className="fas fa-rocket mr-3"></i>
+                                        Start Creating Free
+                                    </button>
+                                    <button className="border-2 border-white/30 hover:border-white/50 bg-white/10 backdrop-blur-md px-8 py-4 rounded-2xl font-bold text-lg transition-all duration-300 hover:bg-white/20">
+                                        <i className="fas fa-play mr-3"></i>
+                                        Watch Demo
+                                    </button>
+                                </div>
+                                
+                                <div className="flex items-center space-x-8 text-sm text-gray-400">
+                                    <div className="flex items-center">
+                                        <i className="fas fa-users text-blue-400 mr-2"></i>
+                                        <span>100K+ Users</span>
+                                    </div>
+                                    <div className="flex items-center">
+                                        <i className="fas fa-star text-yellow-400 mr-2"></i>
+                                        <span>4.9/5 Rating</span>
+                                    </div>
+                                    <div className="flex items-center">
+                                        <i className="fas fa-clock text-green-400 mr-2"></i>
+                                        <span>30 Sec Setup</span>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div className="relative">
+                                <div className="relative z-10 float-animation">
+                                    <div className="glass-effect rounded-3xl p-8 shadow-2xl">
+                                        <div className="bg-gradient-to-br from-blue-500/20 to-purple-500/20 rounded-2xl p-6 mb-6">
+                                            <div className="flex items-center justify-between mb-4">
+                                                <span className="text-sm text-gray-300">AI Resume Builder</span>
+                                                <i className="fas fa-brain text-blue-400"></i>
+                                            </div>
+                                            <div className="space-y-3">
+                                                <div className="h-3 bg-white/20 rounded-full"></div>
+                                                <div className="h-3 bg-white/20 rounded-full w-3/4"></div>
+                                                <div className="h-3 bg-white/20 rounded-full w-1/2"></div>
+                                            </div>
+                                        </div>
+                                        <div className="text-center">
+                                            <div className="text-2xl font-bold text-white mb-2">93% Success Rate</div>
+                                            <div className="text-gray-400">Average interviews increased</div>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                {/* Floating elements */}
+                                <div className="absolute -top-10 -right-10 w-20 h-20 bg-blue-500/30 rounded-full blur-2xl"></div>
+                                <div className="absolute -bottom-10 -left-10 w-16 h-16 bg-purple-500/30 rounded-full blur-2xl"></div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+            );
+        };
+
+        // Feature Card Component
+        const FeatureCard = ({ icon, title, description, gradient, delay = 0 }) => {
+            const [isHovered, setIsHovered] = useState(false);
+            
+            return (
+                <div 
+                    className="group relative p-8 bg-white/5 backdrop-blur-md rounded-3xl border border-white/10 hover:border-white/20 transition-all duration-500 transform hover:scale-105"
+                    onMouseEnter={() => setIsHovered(true)}
+                    onMouseLeave={() => setIsHovered(false)}
+                    style={{
+                        animationDelay: `${delay}ms`
+                    }}
+                >
+                    <div className={`w-16 h-16 ${gradient} rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300`}>
+                        <i className={`fas ${icon} text-white text-2xl`}></i>
+                    </div>
+                    <h3 className="text-xl font-display font-bold text-white mb-4">{title}</h3>
+                    <p className="text-gray-300 leading-relaxed">{description}</p>
+                    
+                    {/* Hover effect */}
+                    {isHovered && (
+                        <div className="absolute inset-0 bg-gradient-to-br from-blue-500/10 to-purple-500/10 rounded-3xl"></div>
+                    )}
+                </div>
+            );
+        };
+
+        // Features Section
+        const Features = () => {
+            const features = [
+                {
+                    icon: 'fa-brain',
+                    title: 'Neural AI Writing',
+                    description: 'Advanced neural networks analyze your experience and create compelling, personalized content that resonates with hiring managers.',
+                    gradient: 'bg-gradient-to-br from-blue-500 to-blue-600'
+                },
+                {
+                    icon: 'fa-search',
+                    title: 'ATS Intelligence',
+                    description: 'Beat applicant tracking systems with AI-powered keyword optimization that passes through filters and reaches human recruiters.',
+                    gradient: 'bg-gradient-to-br from-green-500 to-green-600'
+                },
+                {
+                    icon: 'fa-palette',
+                    title: '2025 Templates',
+                    description: 'Choose from 100+ futuristic, recruiter-approved templates designed with the latest design trends and UX principles.',
+                    gradient: 'bg-gradient-to-br from-purple-500 to-purple-600'
+                },
+                {
+                    icon: 'fa-lightning-bolt',
+                    title: 'Instant Generation',
+                    description: 'Create a complete, polished resume and cover letter in under 60 seconds with our lightning-fast AI automation.',
+                    gradient: 'bg-gradient-to-br from-orange-500 to-orange-600'
+                },
+                {
+                    icon: 'fa-robot',
+                    title: 'Smart AI Coach',
+                    description: 'Get real-time suggestions and improvements as you edit, with AI-powered recommendations for maximum impact.',
+                    gradient: 'bg-gradient-to-br from-red-500 to-red-600'
+                },
+                {
+                    icon: 'fa-download',
+                    title: 'Multi-Format Export',
+                    description: 'Export your documents in PDF, Word, HTML, or plain text formats optimized for different application requirements.',
+                    gradient: 'bg-gradient-to-br from-teal-500 to-teal-600'
+                }
+            ];
+
+            return (
+                <section id="features" className="py-32 bg-black relative">
+                    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                        <div className="text-center mb-20">
+                            <h2 className="text-5xl lg:text-6xl font-display font-bold text-white mb-6">
+                                Next-Gen AI
+                                <span className="block gradient-text">Technology</span>
+                            </h2>
+                            <p className="text-xl text-gray-400 max-w-3xl mx-auto">
+                                Revolutionary AI technology transforms your career documents into compelling narratives that get results in 2025's competitive job market.
+                            </p>
+                        </div>
+                        
+                        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+                            {features.map((feature, index) => (
+                                <FeatureCard
+                                    key={index}
+                                    {...feature}
+                                    delay={index * 100}
+                                />
+                            ))}
+                        </div>
+                    </div>
+                </section>
+            );
+        };
+
+        // Pricing Card Component
+        const PricingCard = ({ plan, price, features, popular, gradient }) => {
+            const [isHovered, setIsHovered] = useState(false);
+            
+            return (
+                <div 
+                    className={`relative p-8 rounded-3xl transition-all duration-500 transform ${
+                        popular ? 'scale-105 z-10' : ''
+                    } ${isHovered ? 'scale-110' : ''}`}
+                    onMouseEnter={() => setIsHovered(true)}
+                    onMouseLeave={() => setIsHovered(false)}
+                >
+                    {popular && (
+                        <div className="absolute -top-4 left-1/2 transform -translate-x-1/2 z-20">
+                            <span className="bg-gradient-to-r from-yellow-400 to-orange-500 text-black px-6 py-2 rounded-full text-sm font-bold">
+                                Most Popular 2025
+                            </span>
+                        </div>
+                    )}
+                    
+                    <div className={`h-full glass-effect rounded-3xl p-8 ${popular ? 'border-2 border-yellow-400/50' : 'border border-white/10'}`}>
+                        <div className="text-center mb-8">
+                            <h3 className="text-2xl font-display font-bold text-white mb-4">{plan}</h3>
+                            <div className="mb-6">
+                                <span className="text-5xl font-bold text-white">{price}</span>
+                                <span className="text-gray-400 ml-2">/month</span>
+                            </div>
+                        </div>
+                        
+                        <ul className="space-y-4 mb-8">
+                            {features.map((feature, index) => (
+                                <li key={index} className="flex items-center text-gray-300">
+                                    <i className="fas fa-check text-green-400 mr-3 w-5"></i>
+                                    <span>{feature}</span>
+                                </li>
+                            ))}
+                        </ul>
+                        
+                        <button className={`w-full py-4 rounded-2xl font-bold text-lg transition-all duration-300 ${
+                            popular 
+                                ? 'bg-gradient-to-r from-yellow-400 to-orange-500 text-black hover:shadow-2xl' 
+                                : 'bg-white/10 hover:bg-white/20 text-white'
+                        }`}>
+                            {popular ? 'Start Professional' : 'Get Started'}
+                        </button>
+                    </div>
+                </div>
+            );
+        };
+
+        // Pricing Section
+        const Pricing = () => {
+            const pricingPlans = [
+                {
+                    plan: 'Starter',
+                    price: '$0',
+                    features: [
+                        '5 AI resumes/month',
+                        '5 AI cover letters/month', 
+                        'Basic templates',
+                        'PDF export',
+                        'Email support'
+                    ],
+                    popular: false
+                },
+                {
+                    plan: 'Professional',
+                    price: '$29',
+                    features: [
+                        'Unlimited AI resumes',
+                        'Unlimited AI cover letters',
+                        '100+ Premium templates',
+                        'Advanced ATS optimization',
+                        'AI writing coach',
+                        'Priority support'
+                    ],
+                    popular: true
+                },
+                {
+                    plan: 'Enterprise',
+                    price: '$99',
+                    features: [
+                        'Everything in Professional',
+                        'Team collaboration',
+                        'Custom branding',
+                        'Advanced analytics',
+                        'API access',
+                        'Dedicated success manager'
+                    ],
+                    popular: false
+                }
+            ];
+
+            return (
+                <section id="pricing" className="py-32 bg-gradient-to-b from-black to-gray-900 relative">
+                    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                        <div className="text-center mb-20">
+                            <h2 className="text-5xl lg:text-6xl font-display font-bold text-white mb-6">
+                                Choose Your
+                                <span className="block gradient-text">2025 Plan</span>
+                            </h2>
+                            <p className="text-xl text-gray-400 max-w-3xl mx-auto">
+                                Start with our free plan and upgrade as you scale. All plans include our revolutionary AI technology.
+                            </p>
+                        </div>
+                        
+                        <div className="grid md:grid-cols-3 gap-8 max-w-6xl mx-auto">
+                            {pricingPlans.map((plan, index) => (
+                                <PricingCard key={index} {...plan} />
+                            ))}
+                        </div>
+                        
+                        <div className="text-center mt-16">
+                            <p className="text-gray-400 mb-6">All plans include 14-day money-back guarantee</p>
+                            <button className="text-blue-400 hover:text-blue-300 font-semibold transition-colors">
+                                Compare all features →
+                            </button>
+                        </div>
+                    </div>
+                </section>
+            );
+        };
+
+        // CTA Section
+        const CTA = () => {
+            return (
+                <section className="py-32 bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 relative overflow-hidden">
+                    <div className="absolute inset-0 bg-black/20"></div>
+                    
+                    <div className="max-w-4xl mx-auto text-center px-4 sm:px-6 lg:px-8 relative z-10">
+                        <h2 className="text-4xl lg:text-6xl font-display font-bold text-white mb-6">
+                            Ready to Transform Your Career?
+                        </h2>
+                        <p className="text-xl text-white/90 mb-12 max-w-2xl mx-auto">
+                            Join 100,000+ professionals who've secured interviews at Fortune 500 companies with our AI-powered resume technology.
+                        </p>
+                        <div className="flex flex-col sm:flex-row gap-4 justify-center">
+                            <button className="bg-white text-purple-600 hover:bg-gray-100 px-8 py-4 rounded-2xl font-bold text-lg transition-all duration-300 transform hover:scale-105 shadow-2xl">
+                                <i className="fas fa-rocket mr-3"></i>
+                                Start Free Trial
+                            </button>
+                            <button className="border-2 border-white text-white hover:bg-white hover:text-purple-600 px-8 py-4 rounded-2xl font-bold text-lg transition-all duration-300">
+                                Schedule Demo
+                            </button>
+                        </div>
+                    </div>
+                </section>
+            );
+        };
+
+        // Footer Component with Neuronx 2025
+        const Footer = () => {
+            return (
+                <footer className="bg-gray-900 border-t border-gray-800 py-16">
+                    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                        <div className="grid md:grid-cols-5 gap-8">
+                            <div className="md:col-span-2 space-y-6">
+                                <div className="flex items-center space-x-3">
+                                    <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-purple-600 rounded-2xl flex items-center justify-center">
+                                        <i className="fas fa-brain text-white text-xl"></i>
+                                    </div>
+                                    <div>
+                                        <h3 className="text-2xl font-display font-bold text-white">AIResume Pro</h3>
+                                        <p className="text-gray-400 text-sm">2025 Edition</p>
+                                    </div>
+                                </div>
+                                <p className="text-gray-400 max-w-md">
+                                    Revolutionary AI-powered resume and cover letter generator that helps professionals land their dream jobs faster.
+                                </p>
+                                <div className="flex space-x-4">
+                                    <a href="#" className="text-gray-400 hover:text-white transition-colors">
+                                        <i className="fab fa-twitter text-xl"></i>
+                                    </a>
+                                    <a href="#" className="text-gray-400 hover:text-white transition-colors">
+                                        <i className="fab fa-linkedin text-xl"></i>
+                                    </a>
+                                    <a href="#" className="text-gray-400 hover:text-white transition-colors">
+                                        <i className="fab fa-github text-xl"></i>
+                                    </a>
+                                </div>
+                            </div>
+                            
+                            <div>
+                                <h4 className="text-lg font-semibold text-white mb-4">Product</h4>
+                                <ul className="space-y-3 text-gray-400">
+                                    <li><a href="#" className="hover:text-white transition-colors">Features</a></li>
+                                    <li><a href="#" className="hover:text-white transition-colors">Pricing</a></li>
+                                    <li><a href="#" className="hover:text-white transition-colors">Templates</a></li>
+                                    <li><a href="#" className="hover:text-white transition-colors">Examples</a></li>
+                                </ul>
+                            </div>
+                            
+                            <div>
+                                <h4 className="text-lg font-semibold text-white mb-4">Resources</h4>
+                                <ul className="space-y-3 text-gray-400">
+                                    <li><a href="#" className="hover:text-white transition-colors">Blog</a></li>
+                                    <li><a href="#" className="hover:text-white transition-colors">Career Advice</a></li>
+                                    <li><a href="#" className="hover:text-white transition-colors">Resume Tips</a></li>
+                                    <li><a href="#" className="hover:text-white transition-colors">FAQ</a></li>
+                                </ul>
+                            </div>
+                            
+                            <div>
+                                <h4 className="text-lg font-semibold text-white mb-4">Support</h4>
+                                <ul className="space-y-3 text-gray-400">
+                                    <li><a href="#" className="hover:text-white transition-colors">Contact Us</a></li>
+                                    <li><a href="#" className="hover:text-white transition-colors">Help Center</a></li>
+                                    <li><a href="#" className="hover:text-white transition-colors">Privacy Policy</a></li>
+                                    <li><a href="#" className="hover:text-white transition-colors">Terms of Service</a></li>
+                                </ul>
+                            </div>
+                        </div>
+                        
+                        <div className="border-t border-gray-800 mt-12 pt-8 text-center">
+                            <div className="flex flex-col md:flex-row justify-between items-center space-y-4 md:space-y-0">
+                                <p className="text-gray-400">
+                                    © 2025 AIResume Pro. All rights reserved.
+                                </p>
+                                <div className="flex items-center space-x-2 text-gray-400">
+                                    <span>Powered by</span>
+                                    <span className="bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent font-bold">
+                                        Neuronx
+                                    </span>
+                                    <span>2025</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </footer>
+            );
+        };
+
+        // Main App Component
+        const App = () => {
+            return (
+                <div className="min-h-screen bg-black">
+                    <Header />
+                    <Hero />
+                    <Features />
+                    <Pricing />
+                    <CTA />
+                    <Footer />
+                </div>
+            );
+        };
+
+        // Render the app
+        ReactDOM.render(<App />, document.getElementById('root'));
+    </script>
+</body>
+</html>
